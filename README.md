@@ -9,7 +9,7 @@ Under each benchmark folder
 
 "java -jar target/benchmarks.jar" to run the benchmark
 
-#Benchmark
+#NPE
 npe-nullcheck is to benchmark a simple null check.
 
 npe-throwcatch is to benchmark a manual NPE throw and catch.
