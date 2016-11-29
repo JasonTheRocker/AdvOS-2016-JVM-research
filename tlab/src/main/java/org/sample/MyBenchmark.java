@@ -31,6 +31,8 @@
 
 package org.sample;
 
+import java.lang.*;
+import java.util.*;
 import org.openjdk.jmh.annotations.Benchmark;
 
 public class MyBenchmark {
@@ -39,6 +41,18 @@ public class MyBenchmark {
     public void testMethod() {
         // This is a demo/sample template for building your JMH benchmarks. Edit as needed.
         // Put your benchmark code here.
+        int i;
+
+        for(i=0; i<1000000; i++){
+            allocate_and_forget();
+        }
+    }
+
+    // Allocate some object instances
+    // These instances should go out of scope when the function returns
+    private void allocate_and_forget() { 
+        ArrayList<Integer> a = new ArrayList<>(10);
+        return;
     }
 
 }
