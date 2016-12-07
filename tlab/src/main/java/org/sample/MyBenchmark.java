@@ -36,6 +36,9 @@ import java.util.*;
 import org.openjdk.jmh.annotations.Benchmark;
 
 public class MyBenchmark {
+    
+    private static final int LOOP_CNT  =     100;
+    private static final int ALLOC_CNT = 1000000;
 
     @Benchmark
     public void testMethod() {
@@ -43,7 +46,7 @@ public class MyBenchmark {
         // Put your benchmark code here.
         int i;
 
-        for(i=0; i<1000000; i++){
+        for(i=0; i<LOOP_CNT; i++){
             allocate_and_forget();
         }
     }
@@ -51,7 +54,11 @@ public class MyBenchmark {
     // Allocate some object instances
     // These instances should go out of scope when the function returns
     private void allocate_and_forget() { 
-        ArrayList<Integer> a = new ArrayList<>(10);
+        Integer temp;
+        int i;
+        for(i=0; i<ALLOC_CNT; i++){
+            temp = new Integer(i);
+        }
         return;
     }
 
