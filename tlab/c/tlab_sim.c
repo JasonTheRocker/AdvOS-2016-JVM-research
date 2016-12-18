@@ -6,19 +6,17 @@
  * gives a speedup.
  */
 
-//TODO: implement non-tlab case
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define MAINLOOP_CNT 100000
-// TLAB size must be greater than OBJ_SIZE * GC_INTERVAL
-#define TLAB_SIZE      1000
+#define MAINLOOP_CNT 100000000
 // objects are just char arrays
 // OBJ_SIZE is the number of chars in each char array
-#define OBJ_SIZE         10
+#define OBJ_SIZE            10
 // GC will run after this many allocations
-#define GC_INTERVAL      10
+#define GC_INTERVAL         10
+// TLAB size must be greater than OBJ_SIZE * GC_INTERVAL
+#define TLAB_SIZE         OBJ_SIZE * GC_INTERVAL
 
 // set this flag from makefile
 // if USE_TLAB is 1, will cache malloc/free using TLAB
@@ -40,7 +38,7 @@ typedef struct{
     int alloc_count;
     // Array of pointers to objects (may be located in TLAB)
     // It's size is fixed by GC_INTERVAL because we expect to
-    // get rid of all the objects whenever to do GC
+    // get rid of all the objects whenever we do GC
     char *objs[GC_INTERVAL];
 } context;
 
@@ -107,21 +105,28 @@ char *alloc_new_obj(context *cxt){
         cxt->tlab->top = 0;
     }
 
+    // check if there is enough space in the TLAB
     // return failure if we don't have enough space
     if(cxt->tlab->top + OBJ_SIZE > TLAB_SIZE){
         return NULL;
     }
     
     // point the new obj to the free space in tlab
-    // add the new obj to the obj array
     // bump the tlab top
     new_obj = cxt->tlab->buf + cxt->tlab->top;
-    cxt->objs[cxt->alloc_count] = new_obj;
     cxt->tlab->top += OBJ_SIZE;
 
-    // update the alloc count
-    cxt->alloc_count++;
+#else //USE_TLAB disabled
+    // allocate the object directly from malloc
+    new_obj = malloc(sizeof(char)*OBJ_SIZE);
+    if(new_obj == NULL){
+        return NULL;
+    }
 #endif
+
+    // add the new obj to the obj array and update alloc count
+    cxt->objs[cxt->alloc_count] = new_obj;
+    cxt->alloc_count++;
 
     return new_obj;
 }
@@ -131,8 +136,14 @@ int garbage_collect(context *cxt){
 #if USE_TLAB
     // free the tlab
     free(cxt->tlab);
+#else //USE_TLAB disabled
+    // loop through the array of objects and free them all
+    int i;
+    for(i=0; i<GC_INTERVAL; i++){
+        free(cxt->objs[i]);
+    }
+#endif
     // re-init the context
     init_context(cxt);
     return 1;
-#endif
 }
