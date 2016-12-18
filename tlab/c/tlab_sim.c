@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define MAINLOOP_CNT 100000
 // TLAB size must be greater than OBJ_SIZE * GC_INTERVAL
 #define TLAB_SIZE      1000
@@ -22,7 +23,9 @@
 // set this flag from makefile
 // if USE_TLAB is 1, will cache malloc/free using TLAB
 // if USE_TLAB is 0, will malloc/free each object directly
+#ifndef USE_TLAB
 #define USE_TLAB 1
+#endif
 
 typedef struct{
     // buffer to allocate objects from
@@ -66,7 +69,7 @@ int main (void){
         if(obj == NULL){
             return 1;
         }
-        strncpy(obj, "abcdefghi", sizeof(char * OBJ_SIZE));
+        strncpy(obj, "abcdefghi", sizeof(char)*OBJ_SIZE);
     }
 
     return 0;
@@ -78,7 +81,7 @@ void init_context(context *cxt){
     cxt->tlab = NULL;
     cxt->alloc_count = 0;
     for(i=0; i<GC_INTERVAL; i++){
-        cxt->objs[i] == NULL;
+        cxt->objs[i] = NULL;
     }
 }
 
@@ -100,6 +103,8 @@ char *alloc_new_obj(context *cxt){
         if(cxt->tlab == NULL){
             return NULL;
         }
+        // init tlab top
+        cxt->tlab->top = 0;
     }
 
     // return failure if we don't have enough space
@@ -127,7 +132,7 @@ int garbage_collect(context *cxt){
     // free the tlab
     free(cxt->tlab);
     // re-init the context
-    init_context(cxt)
+    init_context(cxt);
     return 1;
 #endif
 }
