@@ -36,30 +36,15 @@ import java.util.*;
 import org.openjdk.jmh.annotations.Benchmark;
 
 public class MyBenchmark {
-    
+
     private static final int LOOP_CNT  =     100;
     private static final int ALLOC_CNT = 1000000;
 
     @Benchmark
     public void testMethod() {
-        // This is a demo/sample template for building your JMH benchmarks. Edit as needed.
-        // Put your benchmark code here.
-        int i;
-
-        for(i=0; i<LOOP_CNT; i++){
-            allocate_and_forget();
-        }
-    }
-
-    // Allocate some object instances
-    // These instances should go out of scope when the function returns
-    private void allocate_and_forget() { 
-        Integer temp;
-        int i;
-        for(i=0; i<ALLOC_CNT; i++){
-            temp = new Integer(i);
-        }
-        return;
+        // the actual benchmark is in another class,
+        // so that it is possible to run it outside of jmh
+        StandaloneBenchmark.testMethod(LOOP_CNT, ALLOC_CNT);        
     }
 
 }
